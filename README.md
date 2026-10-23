@@ -56,7 +56,7 @@ AlphaEngine/
 ├── README.md               # Project documentation
 └── templates/
     └── index.html          # Frontend dashboard interface
-
+````
 ---
 
 ## Author
