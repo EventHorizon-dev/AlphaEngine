@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AlphaEngine | Optimisation de Portefeuille</title>
+    <style>
+        /* 1. Style global de la page */
+        body {
+            font-family: sans-serif;
+            color: #2d3748;
+            background-color: #f7fafc;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 2. Style de la boîte principale blanche */
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 3. Style des lignes d'actifs (champs + poubelles) */
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        /* 4. Style des boutons */
+        .btn-add {
+            width: 100%;
+            background-color: transparent;
+            color: #1e293b;
+            border: 2px dashed #1e293b;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-add:hover {
+            background-color: #f1f5f9;
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: 1px solid #fee2e2;
+            color: #ef4444;
+            font-size: 16px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete:hover {
+            background-color: #fef2f2;
+            border-color: #ef4444;
+            transform: scale(1.05);
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            background-color: #1e293b; /* Bleu Navy */
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* 5. Style de la boîte de résultats */
+        .results-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .results-title {
+            color: #1e293b;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .results-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+
+        .results-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+
+    <script>
+        // Fonction qui ajoute une ligne avec la poubelle ET l'autocomplétion connectée
+        function ajouterUneLigne() {
+            const boite = document.getElementById('conteneur-actifs');
+            const nouvelleLigne = document.createElement('div');
+            nouvelleLigne.className = "input-group";
+
+            nouvelleLigne.innerHTML = `
+                <input type="text" name="nom_actif[]" placeholder="Nom (ex: AAPL)" list="liste-actifs" required>
+                <button type="button" class="btn-delete" onclick="this.parentElement.remove()">🗑️</button>
+            `;
+
+            boite.appendChild(nouvelleLigne);
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>AlphaEngine</h1>
+        {% if error_msg %}
+            <div style="background-color: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; text-align: center; font-weight: bold;">
+                ⚠️ {{ error_msg }}
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            <div id="conteneur-actifs">
+                <div class="input-group">
+                    <input type="text" name="nom_actif[]" placeholder="Nom (ex: AAPL)" list="liste-actifs" required>
+                    <button type="button" class="btn-delete" onclick="this.parentElement.remove()">🗑️</button>
+                </div>
+            </div>
+
+            <button type="button" class="btn-add" onclick="ajouterUneLigne()">+ Ajouter une action</button>
+
+            <input type="submit" value="Calculer le Portefeuille Idéal">
+        </form>
+
+        {% if resultats %}
+            <div class="results-box">
+                <h2 class="results-title"> PORTEFEUILLE IDÉAL TROUVÉ</h2>
+                <ul class="results-list">
+                    {% for nom, poids in resultats.items() %}
+                        <li>
+                            <span style="font-weight: bold;">{{ nom }}</span>
+                            <span style="color: #0f5132; font-weight: bold;">{{ poids }}%</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div style="margin-top: 20px; display: flex; justify-content: center;">
+                {% if graph_html %}
+                    {{ graph_html|safe }}
+                {% endif %}
+            </div>
+            </div>
+        {% endif %}
+
+        <datalist id="liste-actifs">
+            <option value="SPCX">SpaceX (Space Exploration Technologies)</option>
+            <option value="AAPL">Apple Inc.</option>
+            <option value="MSFT">Microsoft Corp.</option>
+            <option value="AMZN">Amazon.com Inc.</option>
+            <option value="NVDA">NVIDIA Corp.</option>
+            <option value="GOOGL">Alphabet Inc. (Google)</option>
+            <option value="META">Meta Platforms (Facebook)</option>
+            <option value="TSLA">Tesla Inc.</option>
+            <option value="NFLX">Netflix Inc.</option>
+        </datalist>
+
+    </div> </body>
+</html>
